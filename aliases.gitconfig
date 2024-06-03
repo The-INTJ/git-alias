@@ -1,24 +1,26 @@
 [alias]
-    squash = "!f() { \
-        git add . && \
-        git commit -m 'changes' && \
-        git reset --soft HEAD~1 && \
-        git commit --amend -C HEAD; \
-    }; f"
-    rollback = "!f() { \
+squash = "!f() { 
+    git add . && 
+    git commit -m 'changes' && 
+    git reset --soft HEAD~1 && 
+    git commit --amend -C HEAD && 
+    git push -f origin -u HEAD; 
+}; f"
+
+rollback = "!f() { \
         git checkout HEAD~1 -- \"$1\" && \
         if [ $(git ls-files --others --exclude-standard \"$1\") ]; then \
             git rm --cached \"$1\"; \
         fi; \
         git commit -m \"Rollback changes to $1\"; \
     }; f"
-	all = "!f() { \
+all = "!f() { \
 		git add . && \
 		git commit -m \"$1\" && \
 		git push origin +HEAD; \
 	}; f"
-    sqcms = "!f() { git add . && git commit --fixup HEAD && GIT_SEQUENCE_EDITOR=':' git rebase -i --autosquash HEAD~2 && git push -f origin -u HEAD; if [ $? -eq 0 ]; then echo 'Pushed squashed changes to origin'; else echo 'Failed to squash commits'; fi }; f"
-    acm = "!f() { git add . && git commit -m \"$1\" & git push origin -u HEAD; }; f"
-    scm = "!f() { git stash && git checkout master && git pull; }; f"
-    hrt = "!f() { git fetch origin && git reset --hard origin/master; }; f"
-    undo = "!f() { git checkout HEAD~1 -- $1 && git sqcms; }; f"
+sqcms = "!f() { git add . && git commit --fixup HEAD && GIT_SEQUENCE_EDITOR=':' git rebase -i --autosquash HEAD~2 && git push -f origin -u HEAD; if [ $? -eq 0 ]; then echo 'Pushed squashed changes to origin'; else echo 'Failed to squash commits'; fi }; f"
+acm = "!f() { git add . && git commit -m \"$1\" & git push origin -u HEAD; }; f"
+scm = "!f() { git stash && git checkout master && git pull; }; f"
+hrt = "!f() { git fetch origin && git reset --hard origin/master; }; f"
+undo = "!f() { git checkout HEAD~1 -- $1 && git sqcms; }; f"
