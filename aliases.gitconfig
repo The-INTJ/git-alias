@@ -1,26 +1,63 @@
 [alias]
-squash = "!f() { 
-    git add . && 
-    git commit -m 'changes' && 
-    git reset --soft HEAD~1 && 
-    git commit --amend -C HEAD && 
-    git push -f origin -u HEAD; 
-}; f"
-
-rollback = "!f() { \
-        git checkout HEAD~1 -- \"$1\" && \
-        if [ $(git ls-files --others --exclude-standard \"$1\") ]; then \
-            git rm --cached \"$1\"; \
-        fi; \
-        git commit -m \"Rollback changes to $1\"; \
+    squash = "!f() { \
+        git add . && \
+        git commit -m 'changes' && \
+        git reset --soft HEAD~1 && \
+        git commit --amend -C HEAD; \
     }; f"
-all = "!f() { \
+    squash-all = "!f() { \
+        num_commits=\"$1\"; \
+        commit_message=\"$2\"; \
+        git reset --soft HEAD~$num_commits && \
+        git commit -m \"$commit_message\"; \
+    }; f"
+    rollback = "!f() { \
+        file=\"$1\"; \
+        last_commit=$(git log -n 1 --pretty=format:%H -- \"$file\"); \
+        if [ -n \"$last_commit\" ]; then \
+            previous_commit=$(git log -n 1 --skip=1 --pretty=format:%H -- \"$file\"); \
+            if [ -n \"$previous_commit\" ]; then \
+                git checkout \"$previous_commit\" -- \"$file\"; \
+                if [ $(git ls-files --others --exclude-standard \"$file\") ]; then \
+                    git rm --cached \"$file\"; \
+                fi; \
+                git commit -m \"Rollback changes to $file\"; \
+            else \
+                echo \"No previous commit found for $file.\"; \
+            fi; \
+        else \
+            echo \"File not found in commit history.\"; \
+        fi; \
+    }; f"
+    rollback-c = "!f() { \
+        file=\"$1\"; \
+        last_commit=$(git log -n 1 --pretty=format:%H -- \"$file\"); \
+        if [ -n \"$last_commit\" ]; then \
+            previous_commit=$(git log -n 1 --skip=1 --pretty=format:%H -- \"$file\"); \
+            if [ -n \"$previous_commit\" ]; then \
+                git checkout \"$previous_commit\" -- \"$file\"; \
+                if [ $(git ls-files --others --exclude-standard \"$file\") ]; then \
+                    git rm --cached \"$file\"; \
+                fi; \
+                git commit -m \"Rollback changes to $file\"; \
+            else \
+                echo \"No previous commit found for $file.\"; \
+            fi; \
+        else \
+            echo \"File not found in commit history.\"; \
+        fi; \
+    }; f"
+	all = "!f() { \
 		git add . && \
 		git commit -m \"$1\" && \
 		git push origin +HEAD; \
 	}; f"
-sqcms = "!f() { git add . && git commit --fixup HEAD && GIT_SEQUENCE_EDITOR=':' git rebase -i --autosquash HEAD~2 && git push -f origin -u HEAD; if [ $? -eq 0 ]; then echo 'Pushed squashed changes to origin'; else echo 'Failed to squash commits'; fi }; f"
-acm = "!f() { git add . && git commit -m \"$1\" & git push origin -u HEAD; }; f"
-scm = "!f() { git stash && git checkout master && git pull; }; f"
-hrt = "!f() { git fetch origin && git reset --hard origin/master; }; f"
-undo = "!f() { git checkout HEAD~1 -- $1 && git sqcms; }; f"
+    ssh="!f() { \
+        eval \"$(ssh-agent -s)\"; \
+        ssh-add C:/Users/ATAY0025/.ssh/gk_term; \
+        }; f"
+    sqcms = "!f() { git add . && git commit --fixup HEAD && GIT_SEQUENCE_EDITOR=':' git rebase -i --autosquash HEAD~2 && git push -f origin -u HEAD; if [ $? -eq 0 ]; then echo 'Pushed squashed changes to origin'; else echo 'Failed to squash commits'; fi }; f"
+    acm = "!f() { git add . && git commit -m \"$1\" & git push origin -u HEAD; }; f"
+    scm = "!f() { git stash && git checkout master && git pull; }; f"
+    hrt = "!f() { git fetch origin && git reset --hard origin/master; }; f"
+    undo = "!f() { git checkout HEAD~1 -- $1 && git sqcms; }; f"
